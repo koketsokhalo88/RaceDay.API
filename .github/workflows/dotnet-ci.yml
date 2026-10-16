@@ -19,10 +19,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        run: dotnet restore RaceDay/RaceDay.sln
+        run: dotnet restore RaceDay/RaceDay.slnx
 
       - name: Build
-        run: dotnet build RaceDay/RaceDay.sln --no-restore --configuration Release
+        run: dotnet build RaceDay/RaceDay.slnx --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test RaceDay/RaceDay.sln --no-build --configuration Release --verbosity normal
+        run: dotnet test RaceDay/RaceDay.slnx --no-build --configuration Release --verbosity normal
