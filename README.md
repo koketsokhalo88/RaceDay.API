@@ -26,7 +26,6 @@ Note: the Part 1 plan used JWT; Part 2 requires session management, so sessions 
 ## CI/CD
 GitHub Actions builds the solution and runs all unit tests on every push.
 
-![Green build](docs/ci-green.png)
+![Green build](docs/ci-green.jpeg)
 
-## Demo video
-[Watch on YouTube (unlisted)](PASTE-YOUR-LINK-HERE)
+
