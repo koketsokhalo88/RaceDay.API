@@ -28,5 +28,27 @@ GitHub Actions builds the solution and runs all unit tests on every push.
 
 ![Green build](docs/ci-green.png)
 
-## Demo video
-[Watch on YouTube (unlisted)](PASTE-YOUR-LINK-HERE)
+## Configuration
+
+Blob storage settings go in appsettings.json (or user secrets):
+
+json
+"AzureBlob": {
+  "ConnectionString": "",
+  "Container": "images"
+}
+
+
+Never commit a real connection string. If it's empty or invalid, the app falls back to UseDevelopmentStorage=true (the Azurite emulator).
+
+## Authentication
+
+Login stores the user's ID and role in the session (SessionKeys.UserId, SessionKeys.Role). Controllers read the current user from the session. Forbidden actions return StatusCode(403), since no authentication scheme is configured.
+
+## Running the tests
+
+
+dotnet test
+
+
+Or in Visual Studio: Test → Run All Tests. There are 36 integration tests covering auth, events, enrolments and results. They run against WebApplicationFactory and don't need real Azure storage.
