@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using RaceDay.Api.Data;
 using RaceDay.Api.Dtos;
 using RaceDay.Api.Security;
+using RaceDayAPI.Services;
 
 
 namespace RaceDay.Api.Controllers;
@@ -13,7 +14,12 @@ namespace RaceDay.Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     private readonly AppDbContext _db;
-    public UsersController(AppDbContext db) => _db = db;
+    private readonly BlobService _blob;
+    public UsersController(AppDbContext db, BlobService blob)
+    {
+        _db = db;
+        _blob = blob;
+    }
 
     /// <summary>Gets the profile of the logged-in user. Any role.</summary>
     [HttpGet("me")]
@@ -71,4 +77,26 @@ public class UsersController : ApiControllerBase
             result = e.Result == null ? null : Map.ToResult(e.Result)
         }));
     }
+
+    public Task<IActionResult> UploadProfilePic(IFormFile file)
+    {
+        return UploadProfilePic(file, CurrentUserId);
+    }
+
+    /// <summary>Uploads a profile picture for the logged-in user.</summary>
+    [HttpPost("me/profile-pic")]
+    public async Task<IActionResult> UploadProfilePic(IFormFile file, int currentUserId)
+    {
+        var user = await _db.Users.FindAsync(currentUserId);
+        if (user == null) return NotFound();
+
+        if (file == null || file.Length == 0) return BadRequest("No file uploaded");
+
+        await _blob.DeleteAsync(user.ProfilePicUrl);
+
+        user.ProfilePicUrl = await _blob.UploadAsync(file);
+
+        await _db.SaveChangesAsync();
+        return Ok(new { profilePicUrl = user.ProfilePicUrl });
+    }  
 }
