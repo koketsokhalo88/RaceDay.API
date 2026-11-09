@@ -1,0 +1,23 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: Your_password123
+    ports: ["1433:1433"]
+
+  api:
+    build: { context: ., dockerfile: RaceDayAPI/Dockerfile }
+    environment:
+      ConnectionStrings__Default: "Server=sqlserver;Database=RaceDayDB;User Id=sa;Password=Your_password123;TrustServerCertificate=true"
+      Jwt__Key: "THIS_IS_A_SECRET_KEY_CHANGE_ME_1234567890_0123456789"
+      AzureBlob__ConnectionString: "<your real blob connection string>"
+    ports: ["5000:8080"]
+    depends_on: [sqlserver]
+
+  mvc:
+    build: { context: ., dockerfile: RaceDayMVC/Dockerfile }
+    environment:
+      ApiBaseUrl: "http://api:8080/"
+    ports: ["5001:8080"]
+    depends_on: [api]

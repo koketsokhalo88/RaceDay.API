@@ -4,6 +4,9 @@ using RaceDay.Api.Data;
 using RaceDay.Api.Dtos;
 using RaceDay.Api.Models;
 using RaceDay.Api.Security;
+using RaceDayAPI.Services;
+using System.Security.Claims;
+using System.Security.Claims;
 
 namespace RaceDay.Api.Controllers;
 
@@ -12,8 +15,14 @@ namespace RaceDay.Api.Controllers;
 public class EventsController : ApiControllerBase
 {
     private static readonly string[] EventTypes = { "Run", "Walk", "Cycle" };
-    private readonly AppDbContext _db;
-    public EventsController(AppDbContext db) => _db = db;
+   private readonly AppDbContext _db;
+    private readonly BlobService _blob;
+    public EventsController(AppDbContext db, BlobService blob)
+    {
+        _db = db;
+        _blob = blob;
+    }
+  
 
     /// <summary>Creates a new event. Organiser only.</summary>
     /// <remarks>Expects: eventName, eventDate (yyyy-MM-dd), location, description, eventType (Run, Walk or Cycle), distanceKm.</remarks>
@@ -29,7 +38,7 @@ public class EventsController : ApiControllerBase
 
         var ev = new Event
         {
-            OrganiserID = CurrentUserId,
+            OrganiserID = CurrentUserId(),
             EventName = dto.EventName.Trim(),
             EventDate = dto.EventDate!.Value,
             Location = dto.Location.Trim(),
@@ -71,7 +80,7 @@ public class EventsController : ApiControllerBase
     {
         var ev = await _db.Events.FindAsync(id);
         if (ev is null) return NotFound(new { message = "Event not found." });
-        if (ev.OrganiserID != CurrentUserId) return Forbidden("Only the organiser who created this event may change it.");
+        if (ev.OrganiserID != CurrentUserId()) return Forbid();
 
         var type = EventTypes.FirstOrDefault(t => t.Equals(dto.EventType, StringComparison.OrdinalIgnoreCase));
         if (type is null) return BadRequest(new { message = "EventType must be Run, Walk or Cycle." });
@@ -97,7 +106,7 @@ public class EventsController : ApiControllerBase
             .Include(e => e.Categories).ThenInclude(c => c.Enrolments).ThenInclude(en => en.Result)
             .FirstOrDefaultAsync(e => e.EventID == id);
         if (ev is null) return NotFound(new { message = "Event not found." });
-        if (ev.OrganiserID != CurrentUserId) return Forbidden("Only the organiser who created this event may delete it.");
+        if (ev.OrganiserID != CurrentUserId()) return Forbid();
 
         _db.Events.Remove(ev);
         await _db.SaveChangesAsync();
@@ -115,7 +124,7 @@ public class EventsController : ApiControllerBase
     {
         var ev = await _db.Events.FindAsync(id);
         if (ev is null) return NotFound(new { message = "Event does not exist." });
-        if (ev.OrganiserID != CurrentUserId) return Forbidden("Only the organiser who created this event may add categories.");
+        if (ev.OrganiserID != CurrentUserId()) return Forbid();
 
         var cat = new Category
         {
@@ -140,4 +149,29 @@ public class EventsController : ApiControllerBase
         var cats = await _db.Categories.AsNoTracking().Where(c => c.EventID == id).ToListAsync();
         return Ok(cats.Select(Map.ToCategory));
     }
-}
+
+
+
+    /// <summary>Uploads an event banner image to Azure Blob Storage. Organiser only.</summary>
+    [HttpPost("{id}/banner"), SessionAuth(Roles.Organiser)]
+    public async Task<IActionResult> UploadBanner(int id, IFormFile file, string v)
+    {
+        var ev = await _db.Events.FindAsync(id);
+        if (ev == null) return NotFound();
+        if (ev.OrganiserID != CurrentUserId()) return Forbid();
+
+        if (file == null || file.Length == 0) return BadRequest("No file uploaded");
+
+        await _blob.DeleteAsync(ev.BannerUrl);
+
+        ev.BannerUrl = v;
+
+        await _db.SaveChangesAsync();
+        return Ok(new { bannerUrl = await _blob.UploadAsync(file) });
+    }
+
+    private int CurrentUserId()
+    {
+        return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    }
+}       

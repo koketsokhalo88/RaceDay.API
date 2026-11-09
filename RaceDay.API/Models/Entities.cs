@@ -10,6 +10,7 @@ public class AppUser
 {
     public int UserID { get; set; }
     public int RoleID { get; set; }
+    public string? ProfilePicUrl { get; set; }
     public Role Role { get; set; } = null!;
     public string FullName { get; set; } = "";
     public string Email { get; set; } = "";
@@ -21,6 +22,7 @@ public class Event
 {
     public int EventID { get; set; }
     public int OrganiserID { get; set; }
+    public object OrganiserId { get; internal set; }
     public AppUser Organiser { get; set; } = null!;
     public string EventName { get; set; } = "";
     public DateOnly EventDate { get; set; }
@@ -28,6 +30,7 @@ public class Event
     public string? Description { get; set; }
     public string EventType { get; set; } = "Run";   // Run, Walk or Cycle
     public decimal DistanceKm { get; set; }
+    public string? BannerUrl { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public List<Category> Categories { get; set; } = new();
 }
