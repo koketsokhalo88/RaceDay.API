@@ -1,6 +1,6 @@
 ﻿namespace RaceDayMVC.ViewModels;
 
-public class EventVm { public int Id { get; set; } public string EventName { get; set; } = ""; public string? Description { get; set; } public DateTime EventDate { get; set; } public string Location { get; set; } = ""; public string? EventType { get; set; } public string? BannerUrl { get; set; } public int OrganiserId { get; set; } public List<CategoryVm>? Categories { get; set; } }
+public class EventVm { public int Id { get; set; } public string EventName { get; set; } = ""; public string? Description { get; set; } public DateTime EventDate { get; set; } public string Location { get; set; } = ""; public string? EventType { get; set; } public string? BannerUrl { get; set; } public int OrganiserID { get; set; } public List<CategoryVm>? Categories { get; set; } }
 public class EventFormVm { public string EventName { get; set; } = ""; public DateTime EventDate { get; set; } public string Location { get; set; } = ""; public string? Description { get; set; } public string? EventType { get; set; } }
 public class CategoryVm { public int Id { get; set; } public string CategoryName { get; set; } = ""; public double? DistanceKm { get; set; } public int? MaxParticipants { get; set; } public int EventId { get; set; }
     public EventVm? Event { get; internal set; }

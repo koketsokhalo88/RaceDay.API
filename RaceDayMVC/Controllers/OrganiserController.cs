@@ -16,7 +16,7 @@ public class OrganiserController : Controller
     // Dashboard: my events + enrolment counts + upcoming dates
     public async Task<IActionResult> Dashboard()
     {
-        var mine = (await _api.GetEventsAsync() ?? new()).Where(e => e.OrganiserId == MyId()).ToList();
+        var mine = (await _api.GetEventsAsync() ?? new()).Where(e => e.OrganiserID == MyId()).ToList();
         var rows = new List<DashboardRow>();
         foreach (var e in mine)
         {
@@ -44,7 +44,7 @@ public class OrganiserController : Controller
     public async Task<IActionResult> EditEvent(int id)
     {
         var ev = await _api.GetEventAsync(id);
-        if (ev == null || ev.OrganiserId != MyId()) return Forbid();
+        if (ev == null || ev.OrganiserID != MyId()) return Forbid();
         return View(new EventFormVm { EventName = ev.EventName, EventDate = ev.EventDate, Location = ev.Location, Description = ev.Description, EventType = ev.EventType });
     }
 
@@ -81,7 +81,7 @@ public class OrganiserController : Controller
     public async Task<IActionResult> Enrolments(int eventId)
     {
         var ev = await _api.GetEventAsync(eventId);
-        if (ev == null || ev.OrganiserId != MyId()) return Forbid();
+        if (ev == null || ev.OrganiserID != MyId()) return Forbid();
         var cats = await _api.GetCategoriesAsync(eventId) ?? new();
         var rows = new List<EnrolmentVm>();
         foreach (var c in cats) rows.AddRange(await _api.CategoryEnrolmentsAsync(c.Id) ?? new());

@@ -80,7 +80,7 @@ public class EventsController : ApiControllerBase
     {
         var ev = await _db.Events.FindAsync(id);
         if (ev is null) return NotFound(new { message = "Event not found." });
-        if (ev.OrganiserID != CurrentUserId()) return Forbid();
+        if (ev.OrganiserID != CurrentUserId()) return StatusCode(403);
 
         var type = EventTypes.FirstOrDefault(t => t.Equals(dto.EventType, StringComparison.OrdinalIgnoreCase));
         if (type is null) return BadRequest(new { message = "EventType must be Run, Walk or Cycle." });
@@ -106,7 +106,7 @@ public class EventsController : ApiControllerBase
             .Include(e => e.Categories).ThenInclude(c => c.Enrolments).ThenInclude(en => en.Result)
             .FirstOrDefaultAsync(e => e.EventID == id);
         if (ev is null) return NotFound(new { message = "Event not found." });
-        if (ev.OrganiserID != CurrentUserId()) return Forbid();
+        if (ev.OrganiserID != CurrentUserId()) return StatusCode(403);
 
         _db.Events.Remove(ev);
         await _db.SaveChangesAsync();
@@ -124,7 +124,7 @@ public class EventsController : ApiControllerBase
     {
         var ev = await _db.Events.FindAsync(id);
         if (ev is null) return NotFound(new { message = "Event does not exist." });
-        if (ev.OrganiserID != CurrentUserId()) return Forbid();
+        if (ev.OrganiserID != CurrentUserId()) return StatusCode(403);
 
         var cat = new Category
         {
@@ -158,7 +158,7 @@ public class EventsController : ApiControllerBase
     {
         var ev = await _db.Events.FindAsync(id);
         if (ev == null) return NotFound();
-        if (ev.OrganiserID != CurrentUserId()) return Forbid();
+        if (ev.OrganiserID != CurrentUserId()) return StatusCode(403);
 
         if (file == null || file.Length == 0) return BadRequest("No file uploaded");
 
@@ -172,6 +172,6 @@ public class EventsController : ApiControllerBase
 
     private int CurrentUserId()
     {
-        return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        return HttpContext.Session.GetInt32(SessionKeys.UserId)!.Value;
     }
 }       

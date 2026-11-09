@@ -3,7 +3,7 @@ using Microsoft.OpenApi;
 using RaceDay.Api.Data;
 using RaceDayAPI.Services;
 using System.Reflection;
-using RaceDayAPI.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +15,13 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSingleton<BlobService>();
 builder.Services.AddSession(o =>
 
 {
     o.IdleTimeout = TimeSpan.FromMinutes(30);
     o.Cookie.Name = ".RaceDay.Session";
-    builder.Services.AddSingleton<BlobService>();
+  
     o.Cookie.HttpOnly = true;
     o.Cookie.IsEssential = true;
 });

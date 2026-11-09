@@ -22,7 +22,7 @@ public class Event
 {
     public int EventID { get; set; }
     public int OrganiserID { get; set; }
-    public object OrganiserId { get; internal set; }
+   
     public AppUser Organiser { get; set; } = null!;
     public string EventName { get; set; } = "";
     public DateOnly EventDate { get; set; }
